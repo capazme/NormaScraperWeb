@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NormaScraper App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h1>NormaScraper App</h1>
+    <form id="scrape-form">
+        <label for="act_type">Tipo atto:</label>
+        <input type="text" id="act_type" name="act_type" required><br>
+        <label for="date">Data:</label>
+        <input type="text" id="date" name="date" required><br>
+        <label for="act_number">Numero atto:</label>
+        <input type="text" id="act_number" name="act_number" required><br>
+        <label for="article">Articolo:</label>
+        <input type="text" id="article" name="article"><br>
+        <label for="version">Versione:</label>
+        <input type="text" id="version" name="version"><br>
+        <label for="version_date">Data versione atto:</label>
+        <input type="text" id="version_date" name="version_date"><br>
+        <label for="comma">Comma:</label>
+        <input type="text" id="comma" name="comma"><br>
+        <button type="submit">Estrai dati</button>
+    </form>
+    <pre id="result"></pre>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>
