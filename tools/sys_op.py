@@ -107,24 +107,24 @@ def xml_to_html(xml_file_path):
 
 @lru_cache(maxsize=MAX_CACHE_SIZE)
 def complete_date(act_type, date, act_number):
-    print("log complete_date 1", f'{act_type}, {date}, {act_number}')
+    #print("log complete_date 1", f'{act_type}, {date}, {act_number}')
     try:    
         setup_driver()
         drivers[0].get("https://www.normattiva.it/")
         search_box = drivers[0].find_element(By.CSS_SELECTOR, "#testoRicerca")  # Assicurati che il selettore sia corretto
         search_criteria = f"{act_type} {act_number} {date}"
-        print("log complete_date searchcrieria", search_criteria)
+        #print("log complete_date searchcrieria", search_criteria)
         search_box.send_keys(search_criteria)
         WebDriverWait(drivers[0], 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"button-3\"]"))).click()
         elemento = WebDriverWait(drivers[0], 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="heading_1"]/p[1]/a')))
         elemento_text = elemento.text
-        print("Completamento data", f'{elemento_text}')
+       # print("Completamento data", f'{elemento_text}')
         data_completa = estrai_data_da_denominazione(elemento_text)
-        print("log", f'{data_completa} + log')
+        #print("log", f'{data_completa} + log')
         close_driver()
         return data_completa
     except Exception as e:
-        print("log", f'{e}')
+        #print("log", f'{e}')
         return f"Errore nel completamento della data, inserisci la data completa: {e}" 
 
 @lru_cache(maxsize=MAX_CACHE_SIZE)
@@ -137,24 +137,24 @@ def generate_urn(act_type, date=None, act_number=None, article=None, extension=N
     base_url = "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:"
     
     normalized_act_type = normalize_act_type(act_type)
-    print("log", normalized_act_type)
+    #print("log", normalized_act_type)
     if normalized_act_type in codici_urn:
         urn = codici_urn[normalized_act_type]
     else:
         try:
             if re.match(r"^\d{4}$", date) and act_number:
-                print("log", f"ricerca data completa... é {date}")
+                #print("log", f"ricerca data completa... é {date}")
                 act_type_for_search = normalize_act_type(act_type, search=True)
-                print("log", f'{act_type_for_search}, {date}, {act_number}')
+                #print("log", f'{act_type_for_search}, {date}, {act_number}')
                 full_date = complete_date(act_type=act_type_for_search, date=date, act_number=act_number) 
-                print("log", full_date)
+                #print("log", full_date)
                 formatted_date = parse_date(full_date)
             else:
                 formatted_date = parse_date(date)
-            print(formatted_date)
+           # print(formatted_date)
         except Exception as e:
-            print("log", f'{e}')
-            print(f"Errore nella formattazione della data: {e}")
+           # print("log", f'{e}')
+           # print(f"Errore nella formattazione della data: {e}")
             return None
         urn = f"{normalized_act_type}:{formatted_date};{act_number}"
             

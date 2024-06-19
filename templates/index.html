@@ -1,31 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NormaScraper App</title>
+    <title>Normativa Extraction App</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <h1>NormaScraper App</h1>
-    <form id="scrape-form">
-        <label for="act_type">Tipo atto:</label>
-        <input type="text" id="act_type" name="act_type" required><br>
-        <label for="date">Data:</label>
-        <input type="text" id="date" name="date" required><br>
-        <label for="act_number">Numero atto:</label>
-        <input type="text" id="act_number" name="act_number" required><br>
-        <label for="article">Articolo:</label>
-        <input type="text" id="article" name="article"><br>
-        <label for="version">Versione:</label>
-        <input type="text" id="version" name="version"><br>
-        <label for="version_date">Data versione atto:</label>
-        <input type="text" id="version_date" name="version_date"><br>
-        <label for="comma">Comma:</label>
-        <input type="text" id="comma" name="comma"><br>
-        <button type="submit">Estrai dati</button>
-    </form>
-    <pre id="result"></pre>
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <h1>Normativa Extraction App</h1>
+    <div class="container">
+        <div class="form-container">
+            <form id="scrape-form" method="post" action="/extract">
+                <label for="act_type">Tipo atto:</label>
+                <input type="text" id="act_type" name="act_type" value="{{ request.form.act_type }}" required>
+
+                <label for="date">Data:</label>
+                <input type="text" id="date" name="date" value="{{ request.form.date }}">
+
+                <label for="act_number">Numero atto:</label>
+                <input type="text" id="act_number" name="act_number" value="{{ request.form.act_number }}">
+
+                <label for="article">Articolo:</label>
+                <div class="number-input">
+                    <button type="button" class="decrement"><i class="fas fa-minus"></i></button>
+                    <input type="number" id="article" name="article" value="{{ request.form.article or 1 }}" min="1">
+                    <button type="button" class="increment"><i class="fas fa-plus"></i></button>
+                </div>
+
+                <label for="version">Versione:</label>
+                <input type="text" id="version" name="version" value="{{ request.form.version }}">
+
+                <label for="version_date">Data versione atto:</label>
+                <input type="text" id="version_date" name="version_date" value="{{ request.form.version_date }}">
+
+                <label for="comma">Comma:</label>
+                <input type="text" id="comma" name="comma" value="{{ request.form.comma }}">
+
+                <button type="submit">Estrai dati</button>
+            </form>
+        </div>
+        
+        <div class="results-container">
+            {% if norma_data %}
+            <div id="norma-data">
+                <h2>Informazioni della Norma Visitata</h2>
+                <p><strong>Tipo atto:</strong> {{ norma_data.tipo_atto }}</p>
+                {% if norma_data.data %}
+                <p><strong>Data:</strong> {{ norma_data.data }}</p>
+                {% endif %}
+                {% if norma_data.numero_atto %}
+                <p><strong>Numero atto:</strong> {{ norma_data.numero_atto }}</p>
+                {% endif %}
+                {% if norma_data.numero_articolo %}
+                <p><strong>Numero articolo:</strong> {{ norma_data.numero_articolo }}</p>
+                {% endif %}
+                <p><strong>URL:</strong> <a href="{{ norma_data.url }}" target="_blank">{{ norma_data.url }}</a></p>
+            </div>
+            {% endif %}
+            
+            {% if data %}
+            <div id="result">
+                <p><strong>Result:</strong> {{ data }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
