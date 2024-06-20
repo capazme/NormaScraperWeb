@@ -214,7 +214,8 @@ def extract_html_article(urn, article, comma):
     return None
 
 @lru_cache(maxsize=MAX_CACHE_SIZE)
-def get_tree(normurn, link = False):
+
+def get_tree(normurn, link=False):
     # Sending HTTP GET request to the provided URL
     response = requests.get(normurn)
     
@@ -235,34 +236,37 @@ def get_tree(normurn, link = False):
                 count = 0
                 # Process each ul found
                 for ul in uls:
-                    # Extract all li elements within this ul
-                    list_items = ul.find_all('li')
+                    # Extract all 'a' elements with class 'numero_articolo' within this ul
+                    list_items = ul.find_all('a', class_='numero_articolo')
                     
-                    for li in list_items:
-                        # Extract text and format it properly
-                        text_content = li.get_text(separator=" ", strip=True)
+                    for a in list_items:
+                        # Check if the parent li element has classes that start with "agg" or contain "collapse"
+                        parent_li = a.find_parent('li')
+                        if parent_li:
+                            classes = parent_li.get('class', [])
+                            if any(cls.startswith('agg') for cls in classes) or any('collapse' in cls for cls in classes):
+                                continue
                         
-                        if link and 'condiv singolo_risultato_collapse' not in li.get('class', []):
-                            # Only process links if 'link' is True and li has no class
-                            if not li.get('class'):
-                                # Construct modified URL
-                                # Use regex to find the article part to replace in the normurn
-                                article_part = re.search(r'art\d+', normurn)
-                                if article_part:
-                                    modified_url = normurn.replace(article_part.group(), 'art' + text_content.split()[0])
-                                else:
-                                    modified_url = normurn  # fallback in case regex fails
-                                
-                                # Create dictionary with text content as key and modified URL as value
-                                item_dict = {text_content: modified_url}
-                                result.append(item_dict)
-                                count += 1
+                        # Extract text and format it properly
+                        text_content = a.get_text(separator=" ", strip=True)
+                        
+                        if link:
+                            # Construct modified URL
+                            # Use regex to find the article part to replace in the normurn
+                            article_part = re.search(r'art\d+', normurn)
+                            if article_part:
+                                modified_url = normurn.replace(article_part.group(), 'art' + text_content.split()[0])
                             else:
-                                result.append({text_content: None})  # Preserve content of li with classes, no URL modification
+                                modified_url = normurn  # fallback in case regex fails
+                            
+                            # Create dictionary with text content as key and modified URL as value
+                            item_dict = {text_content: modified_url}
+                            result.append(item_dict)
+                            count += 1
                         else:
                             # If link is False, append only text content
                             result.append(text_content)
-                
+                    
                 return result, count
             else:
                 return "No 'ul' element found within the 'albero' div"
@@ -270,6 +274,7 @@ def get_tree(normurn, link = False):
             return "Div with id 'albero' not found"
     else:
         return f"Failed to retrieve the page, status code: {response.status_code}"
+
 
 @lru_cache(maxsize=MAX_CACHE_SIZE)
 def get_urn_and_extract_data(act_type, date=None, act_number=None, article=None, extension=None, comma=None, version=None, version_date=None, timeout=10, save_xml_path=None):

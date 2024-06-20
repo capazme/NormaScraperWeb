@@ -6,65 +6,49 @@
     <title>Normativa Extraction App</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <h1>Normativa Extraction App</h1>
     <div class="container">
         <div class="form-container">
-            <form id="scrape-form" method="post" action="/extract">
+            <form id="scrape-form">
                 <label for="act_type">Tipo atto:</label>
-                <input type="text" id="act_type" name="act_type" value="{{ request.form.act_type }}" required>
+                <input type="text" id="act_type" name="act_type" required>
 
                 <label for="date">Data:</label>
-                <input type="text" id="date" name="date" value="{{ request.form.date }}">
+                <input type="text" id="date" name="date">
 
                 <label for="act_number">Numero atto:</label>
-                <input type="text" id="act_number" name="act_number" value="{{ request.form.act_number }}">
+                <input type="text" id="act_number" name="act_number">
 
                 <label for="article">Articolo:</label>
                 <div class="number-input">
                     <button type="button" class="decrement"><i class="fas fa-minus"></i></button>
-                    <input type="number" id="article" name="article" value="{{ request.form.article or 1 }}" min="1">
+                    <input type="text" id="article" name="article" value="{{ request.form.article or 1 }}" pattern="\d+(\s[a-z]+)?">
                     <button type="button" class="increment"><i class="fas fa-plus"></i></button>
                 </div>
 
+
                 <label for="version">Versione:</label>
-                <input type="text" id="version" name="version" value="{{ request.form.version }}">
+                <input type="text" id="version" name="version">
 
                 <label for="version_date">Data versione atto:</label>
-                <input type="text" id="version_date" name="version_date" value="{{ request.form.version_date }}">
+                <input type="text" id="version_date" name="version_date">
 
                 <label for="comma">Comma:</label>
-                <input type="text" id="comma" name="comma" value="{{ request.form.comma }}">
+                <input type="text" id="comma" name="comma">
 
                 <button type="submit">Estrai dati</button>
             </form>
         </div>
         
         <div class="results-container">
-            {% if norma_data %}
-            <div id="norma-data">
-                <h2>Informazioni della Norma Visitata</h2>
-                <p><strong>Tipo atto:</strong> {{ norma_data.tipo_atto }}</p>
-                {% if norma_data.data %}
-                <p><strong>Data:</strong> {{ norma_data.data }}</p>
-                {% endif %}
-                {% if norma_data.numero_atto %}
-                <p><strong>Numero atto:</strong> {{ norma_data.numero_atto }}</p>
-                {% endif %}
-                {% if norma_data.numero_articolo %}
-                <p><strong>Numero articolo:</strong> {{ norma_data.numero_articolo }}</p>
-                {% endif %}
-                <p><strong>URL:</strong> <a href="{{ norma_data.url }}" target="_blank">{{ norma_data.url }}</a></p>
+            <div id="loading" style="display: none;">
+                <div class="spinner"></div>
+                Caricamento...
             </div>
-            {% endif %}
-            
-            {% if data %}
-            <div id="result">
-                <p><strong>Result:</strong> {{ data }}</p>
-            </div>
-            {% endif %}
+            <div id="norma-data"></div>
+            <div id="result"></div>
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
