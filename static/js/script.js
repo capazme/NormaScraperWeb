@@ -139,29 +139,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (decrementButton && incrementButton && articleInput) {
         decrementButton.addEventListener('click', function() {
-            if (!actTypeInput.value) {
-                alert('Per favore inserisci il tipo di atto prima di cambiare articolo.');
-                return;
-            }
             let currentValue = articleInput.value;
-            currentValue = decrementArticle(currentValue);
+            if (!actTypeInput.value) {
+                currentValue = '1'; // Imposta l'articolo a 1 se il tipo di atto non è selezionato
+            } else {
+                currentValue = decrementArticle(currentValue);
+            }
             articleInput.value = currentValue;
             articleInput.focus();
             articleInput.dispatchEvent(new Event('input'));
         });
-
+    
         incrementButton.addEventListener('click', function() {
-            if (!actTypeInput.value) {
-                alert('Per favore inserisci il tipo di atto prima di cambiare articolo.');
-                return;
-            }
             let currentValue = articleInput.value;
-            currentValue = incrementArticle(currentValue);
+            if (!actTypeInput.value) {
+                currentValue = '1'; // Imposta l'articolo a 1 se il tipo di atto non è selezionato
+            } else {
+                currentValue = incrementArticle(currentValue);
+            }
             articleInput.value = currentValue;
             articleInput.focus();
             articleInput.dispatchEvent(new Event('input'));
         });
     }
+    
 
     viewPdfButton.addEventListener('click', function() {
         if (!lastUrn) {
@@ -228,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function incrementArticle(article) {
         if (!validateArticleInput(article)) {
-            return articleTree[0]; // Reset to the beginning if input is invalid
+            return '1'; // Imposta l'articolo a 1 se l'input non è valido
         }
         let index = articleTree.indexOf(article);
         if (index < 0) {
@@ -240,10 +241,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return articleTree[index];
     }
-
+    
     function decrementArticle(article) {
         if (!validateArticleInput(article)) {
-            return articleTree[articleTree.length - 1]; // Set to the end if input is invalid
+            return '1'; // Imposta l'articolo a 1 se l'input non è valido
         }
         let index = articleTree.indexOf(article);
         if (index < 0) {
@@ -255,6 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return articleTree[index];
     }
+    
 });
 
 /*******************************
