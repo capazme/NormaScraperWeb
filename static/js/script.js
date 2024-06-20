@@ -1,21 +1,20 @@
+/*******************************
+ * PARTE 1: GESTIONE DELLA SOTTOMISSIONE DEL FORM
+ *******************************/
 document.getElementById('scrape-form').addEventListener('submit', function(e) {
-    e.preventDefault(); // Previene il comportamento predefinito del form (refresh della pagina)
+    e.preventDefault();
 
-    const formData = new FormData(e.target); // Crea un oggetto FormData con i dati del form
+    const formData = new FormData(e.target);
     const data = {};
     formData.forEach((value, key) => {
         if (key === 'article') {
-            value = value.replace(/\s+/g, ''); // Rimuove gli spazi dall'articolo
+            value = value.replace(/\s+/g, '');
         }
-        data[key] = value; // Aggiunge i dati al nuovo oggetto
+        data[key] = value;
     });
 
-    const loadingElement = document.getElementById('loading');
-    if (loadingElement) {
-        loadingElement.style.display = 'block'; // Mostra l'elemento di caricamento
-    }
+    setLoading(true);
 
-    // Invia i dati al server con una richiesta POST
     fetch('/fetch_norm', {
         method: 'POST',
         headers: {
@@ -25,17 +24,15 @@ document.getElementById('scrape-form').addEventListener('submit', function(e) {
     })
     .then(response => response.json())
     .then(result => {
-        if (loadingElement) {
-            loadingElement.style.display = 'none'; // Nasconde l'elemento di caricamento
-        }
+        setLoading(false);
+
         const normaDataContainer = document.getElementById('norma-data');
         const resultContainer = document.getElementById('result');
 
         if (result.error) {
-            resultContainer.textContent = `Error: ${result.error}`; // Mostra un messaggio di errore
+            handleError(result.error, resultContainer);
         } else {
             const normaData = result.norma_data;
-            // Mostra i dati della norma nel DOM
             normaDataContainer.innerHTML = `
                 <h2>Informazioni della Norma Visitata</h2>
                 <p><strong>Tipo atto:</strong> ${normaData.tipo_atto}</p>
@@ -46,24 +43,23 @@ document.getElementById('scrape-form').addEventListener('submit', function(e) {
             `;
             resultContainer.textContent = `Result: ${result.result}`;
 
-            // Controlla se la nuova URL è diversa dall'ultima cercata
             if (lastFetchedUrl !== normaData.url) {
-                lastFetchedUrl = normaData.url; // Aggiorna l'ultima URL cercata
-                fetchTree(normaData.url); // Chiama la funzione per ottenere l'albero degli articoli
+                lastFetchedUrl = normaData.url;
+                fetchTree(normaData.url);
             }
         }
     })
     .catch(error => {
-        if (loadingElement) {
-            loadingElement.style.display = 'none'; // Nasconde l'elemento di caricamento in caso di errore
-        }
-        const resultContainer = document.getElementById('result');
-        resultContainer.textContent = `Error: ${error}`; // Mostra un messaggio di errore
+        setLoading(false);
+        handleError(error, document.getElementById('result'));
     });
 });
 
+/*******************************
+ * PARTE 2: GESTIONE DEGLI ARTICOLI E URL
+ *******************************/
 let articleTree = [];
-let lastFetchedUrl = ''; // Variabile per tenere traccia dell'ultima URL cercata
+let lastFetchedUrl = '';
 
 function fetchTree(urn) {
     fetch('/fetch_tree', {
@@ -76,23 +72,25 @@ function fetchTree(urn) {
     .then(response => response.json())
     .then(result => {
         if (result.error) {
-            console.error(result.error); // Log dell'errore
+            handleError(result.error);
         } else {
             const tree = result.tree;
-            setArticleTree(tree); // Imposta l'albero degli articoli
+            setArticleTree(tree);
         }
     })
     .catch(error => {
-        console.error('Error fetching tree:', error); // Log dell'errore
+        handleError(error);
     });
 }
 
 function setArticleTree(tree) {
-    articleTree = tree; // Mantiene tutti gli articoli come ricevuti dal backend
-    console.log(articleTree); // Per debug
+    articleTree = tree;
+    console.log(articleTree);
 }
 
-
+/*******************************
+ * PARTE 3: GESTIONE DEGLI EVENTI DEL DOM
+ *******************************/
 document.addEventListener('DOMContentLoaded', function() {
     const decrementButton = document.querySelector('.decrement');
     const incrementButton = document.querySelector('.increment');
@@ -109,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentValue = decrementArticle(currentValue);
             articleInput.value = currentValue;
             articleInput.focus();
-            articleInput.dispatchEvent(new Event('input')); // Triggera l'evento input
+            articleInput.dispatchEvent(new Event('input'));
         });
 
         incrementButton.addEventListener('click', function() {
@@ -121,11 +119,14 @@ document.addEventListener('DOMContentLoaded', function() {
             currentValue = incrementArticle(currentValue);
             articleInput.value = currentValue;
             articleInput.focus();
-            articleInput.dispatchEvent(new Event('input')); // Triggera l'evento input
+            articleInput.dispatchEvent(new Event('input'));
         });
     }
 
     function incrementArticle(article) {
+        if (!validateArticleInput(article)) {
+            return articleTree[0]; // Reset to the beginning if input is invalid
+        }
         let index = articleTree.indexOf(article);
         if (index < 0) {
             index = 0;
@@ -138,6 +139,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function decrementArticle(article) {
+        if (!validateArticleInput(article)) {
+            return articleTree[articleTree.length - 1]; // Set to the end if input is invalid
+        }
         let index = articleTree.indexOf(article);
         if (index < 0) {
             index = 0;
@@ -149,3 +153,28 @@ document.addEventListener('DOMContentLoaded', function() {
         return articleTree[index];
     }
 });
+
+/*******************************
+ * FUNZIONI DI SUPPORTO
+ *******************************/
+function handleError(error, messageContainer) {
+    console.error('Error:', error);
+    if (messageContainer) {
+        messageContainer.textContent = `Error: ${error.message || error}`;
+    }
+}
+
+function setLoading(isLoading) {
+    const loadingElement = document.getElementById('loading');
+    if (loadingElement) {
+        loadingElement.style.display = isLoading ? 'block' : 'none';
+    }
+}
+
+function validateArticleInput(article) {
+    if (!article || !articleTree.includes(article)) {
+        alert('Articolo non valido. Per favore inserisci un articolo valido.');
+        return false;
+    }
+    return true;
+}
