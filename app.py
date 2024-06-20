@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from tools import sys_op
-import base64
 import os
+from functools import lru_cache
+
+MAX_CACHE_SIZE = 1000
 
 app = Flask(__name__)
 
@@ -9,6 +11,7 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
+@lru_cache(maxsize=MAX_CACHE_SIZE)
 @app.route('/fetch_norm', methods=['POST'])
 def fetch_data():
     try:
@@ -41,6 +44,7 @@ def fetch_data():
     except Exception as e:
         return jsonify({'error': str(e)})
 
+@lru_cache(maxsize=MAX_CACHE_SIZE)
 @app.route('/fetch_tree', methods=['POST'])
 def fetch_tree():
     try:
@@ -52,6 +56,7 @@ def fetch_tree():
     except Exception as e:
         return jsonify({'error': str(e)})
 
+@lru_cache(maxsize=MAX_CACHE_SIZE)
 @app.route('/export_pdf', methods=['POST'])
 def export_pdf():
     try:

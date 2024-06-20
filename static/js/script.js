@@ -43,7 +43,7 @@ document.getElementById('scrape-form').addEventListener('submit', function(e) {
                 <p><strong>Numero articolo:</strong> ${normaData.numero_articolo}</p>
                 <p><strong>URL:</strong> <a href="${normaData.url}" target="_blank">${normaData.url}</a></p>
             `;
-            resultContainer.textContent = `Result: ${result.result}`;
+            resultContainer.textContent = `${result.result}`;
 
             lastUrn = result.urn; // Memorizza l'URN ottenuto
 
@@ -106,6 +106,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const viewPdfButton = document.getElementById('view-pdf');
     const pdfFrame = document.getElementById('pdf-frame');
     const downloadPdfButton = document.getElementById('download-pdf');
+    const fullscreenButton = document.getElementById('fullscreen-button');
+    const collapsibleButton = document.querySelector('.collapsible');
+    const collapsibleContent = document.querySelector('.content');
 
     function initializeVersionDateInput() {
         if (versionVigente.checked) {
@@ -183,6 +186,9 @@ document.addEventListener('DOMContentLoaded', function() {
             pdfFrame.src = pdfUrl;
             pdfFrame.style.display = 'block';
             downloadPdfButton.style.display = 'block';
+            fullscreenButton.style.display = 'block';
+            collapsibleButton.style.display = 'block'; // Mostra il pulsante collassabile
+            collapsibleContent.style.display = 'block'; // Espandi il contenuto collassabile
 
             downloadPdfButton.addEventListener('click', function() {
                 const a = document.createElement('a');
@@ -192,11 +198,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 a.click();
                 document.body.removeChild(a);
             });
+
+            fullscreenButton.addEventListener('click', function() {
+                if (pdfFrame.requestFullscreen) {
+                    pdfFrame.requestFullscreen();
+                } else if (pdfFrame.mozRequestFullScreen) { // Firefox
+                    pdfFrame.mozRequestFullScreen();
+                } else if (pdfFrame.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                    pdfFrame.webkitRequestFullscreen();
+                } else if (pdfFrame.msRequestFullscreen) { // IE/Edge
+                    pdfFrame.msRequestFullscreen();
+                }
+            });
         })
         .catch(error => {
             setLoading(false);
             handleError(error, document.getElementById('result'));
         });
+    });
+
+    collapsibleButton.addEventListener('click', function() {
+        this.classList.toggle('active');
+        if (collapsibleContent.style.display === 'block') {
+            collapsibleContent.style.display = 'none';
+        } else {
+            collapsibleContent.style.display = 'block';
+        }
     });
 
     function incrementArticle(article) {

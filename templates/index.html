@@ -1,25 +1,22 @@
-<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Normativa Extraction App</title>
-    <!-- Assicurati che il percorso del file CSS sia corretto -->
+    <title>NormaScraper Web</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <!-- Assicurati che il percorso del font sia corretto -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Normativa Extraction App</h1>
+    <h1>NormaScraper Web</h1>
     <div class="container">
         <div class="form-container">
             <form id="scrape-form">
                 <label for="act_type">Tipo atto:</label>
                 <select id="act_type" name="act_type" required>
+                    <option value="costituzione">Costituzione</option>
                     <option value="legge">Legge</option>
                     <option value="decreto legge">Decreto Legge</option>
                     <option value="decreto legislativo">Decreto Legislativo</option>
-                    <option value="costituzione">Costituzione</option>
                     <option value="codice civile">Codice Civile</option>
                     <option value="preleggi">Preleggi</option>
                     <option value="codice penale">Codice Penale</option>
@@ -93,8 +90,12 @@
             </div>
             <div id="norma-data"></div>
             <div id="result"></div>
-            <iframe id="pdf-frame" style="display: none; width: 100%; height: 600px;"></iframe>
-            <button id="download-pdf" style="display: none; margin-top: 20px;">Scarica PDF</button>
+            <button class="collapsible" style="display: none;">PDF</button>
+            <div class="content" style="display: none;">
+                <iframe id="pdf-frame" style="display: none; width: 100%; height: 600px;"></iframe>
+                <button id="fullscreen-button" class="fullscreen-button" style="display: none;">Schermo Intero</button>
+                <button id="download-pdf" style="display: none; margin-top: 20px;">Scarica PDF</button>
+            </div>
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
