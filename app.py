@@ -44,7 +44,7 @@ def fetch_data():
 def fetch_tree():
     try:
         data = request.get_json()
-        urn = data['urn']
+        urn = data['urn'].split('~')[0]  # Rimuove tutto dopo il simbolo "~"
         tree, _ = sys_op.get_tree(urn, link=False)
         
         return jsonify({'tree': tree})

@@ -23,14 +23,20 @@
 
                 <label for="article">Articolo:</label>
                 <div class="number-input">
-                    <button type="button" class="decrement"><i class="fas fa-minus"></i></button>
-                    <input type="text" id="article" name="article" value="{{ request.form.article or 1 }}" pattern="\d+(\s[a-z]+)?">
-                    <button type="button" class="increment"><i class="fas fa-plus"></i></button>
+                    <button type="button" class="decrement"><i class="fas fa-minus">-</i></button>
+                    <input type="text" id="article" name="article" value="1" pattern="\d+(\s[a-z]+)?">
+                    <button type="button" class="increment"><i class="fas fa-plus">+</i></button>
                 </div>
 
-
-                <label for="version">Versione:</label>
-                <input type="text" id="version" name="version">
+                <label>Versione:</label>
+                <div>
+                    <input type="radio" id="originale" name="version" value="originale" checked>
+                    <label for="originale">Originale</label>
+                </div>
+                <div>
+                    <input type="radio" id="vigente" name="version" value="vigente">
+                    <label for="vigente">Vigente</label>
+                </div>
 
                 <label for="version_date">Data versione atto:</label>
                 <input type="text" id="version_date" name="version_date">

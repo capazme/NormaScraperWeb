@@ -135,3 +135,7 @@ a:hover {
         transform: rotate(360deg);
     }
 }
+
+.disabled {
+    opacity: 0.5;
+}
