@@ -1,6 +1,8 @@
 /*******************************
  * PARTE 1: GESTIONE DELLA SOTTOMISSIONE DEL FORM
  *******************************/
+let lastUrn = ''; // Variabile per memorizzare l'URN ottenuto
+
 document.getElementById('scrape-form').addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -42,6 +44,8 @@ document.getElementById('scrape-form').addEventListener('submit', function(e) {
                 <p><strong>URL:</strong> <a href="${normaData.url}" target="_blank">${normaData.url}</a></p>
             `;
             resultContainer.textContent = `Result: ${result.result}`;
+
+            lastUrn = result.urn; // Memorizza l'URN ottenuto
 
             if (lastFetchedUrl !== normaData.url) {
                 lastFetchedUrl = normaData.url;
@@ -96,6 +100,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const incrementButton = document.querySelector('.increment');
     const articleInput = document.getElementById('article');
     const actTypeInput = document.getElementById('act_type');
+    const versionVigente = document.getElementById('vigente');
+    const versionOriginale = document.getElementById('originale');
+    const versionDateInput = document.getElementById('version_date');
+    const viewPdfButton = document.getElementById('view-pdf');
+    const pdfFrame = document.getElementById('pdf-frame');
+    const downloadPdfButton = document.getElementById('download-pdf');
+
+    function initializeVersionDateInput() {
+        if (versionVigente.checked) {
+            versionDateInput.disabled = false;
+            versionDateInput.style.opacity = 1;
+        } else {
+            versionDateInput.disabled = true;
+            versionDateInput.style.opacity = 0.5;
+        }
+    }
+
+    versionVigente.addEventListener('change', function() {
+        if (versionVigente.checked) {
+            versionDateInput.disabled = false;
+            versionDateInput.style.opacity = 1;
+        }
+    });
+
+    versionOriginale.addEventListener('change', function() {
+        if (versionOriginale.checked) {
+            versionDateInput.disabled = true;
+            versionDateInput.style.opacity = 0.5;
+            versionDateInput.value = '';
+        }
+    });
+
+    initializeVersionDateInput(); // Inizializza lo stato del campo alla prima visualizzazione della pagina
 
     if (decrementButton && incrementButton && articleInput) {
         decrementButton.addEventListener('click', function() {
@@ -122,6 +159,45 @@ document.addEventListener('DOMContentLoaded', function() {
             articleInput.dispatchEvent(new Event('input'));
         });
     }
+
+    viewPdfButton.addEventListener('click', function() {
+        if (!lastUrn) {
+            alert('Per favore completa prima una ricerca.');
+            return;
+        }
+
+        setLoading(true);
+
+        fetch('/export_pdf', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ urn: lastUrn })
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            setLoading(false);
+
+            const pdfUrl = URL.createObjectURL(blob);
+            pdfFrame.src = pdfUrl;
+            pdfFrame.style.display = 'block';
+            downloadPdfButton.style.display = 'block';
+
+            downloadPdfButton.addEventListener('click', function() {
+                const a = document.createElement('a');
+                a.href = pdfUrl;
+                a.download = 'norma.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+        })
+        .catch(error => {
+            setLoading(false);
+            handleError(error, document.getElementById('result'));
+        });
+    });
 
     function incrementArticle(article) {
         if (!validateArticleInput(article)) {
@@ -161,6 +237,8 @@ function handleError(error, messageContainer) {
     console.error('Error:', error);
     if (messageContainer) {
         messageContainer.textContent = `Error: ${error.message || error}`;
+    } else {
+        alert(`Error: ${error.message || error}`);
     }
 }
 

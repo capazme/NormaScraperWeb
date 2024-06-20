@@ -1,4 +1,6 @@
 import re
+import os
+import time
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -57,14 +59,22 @@ class NormaVisitata:
     
 drivers = []
 
-def setup_driver():
+def setup_driver(download_dir):
     """
-    Crea un nuovo driver e lo aggiunge alla lista dei driver attivi.
+    Crea un nuovo driver configurato per gestire i download.
     """
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920x1080")
+
+    prefs = {
+        "download.default_directory": download_dir,
+        "download.prompt_for_download": False,
+        "download.directory_upgrade": True,
+        "plugins.always_open_pdf_externally": True
+    }
+    chrome_options.add_experimental_option("prefs", prefs)
     
     new_driver = webdriver.Chrome(options=chrome_options)
     drivers.append(new_driver)
@@ -198,6 +208,34 @@ def export_xml(driver, urn, timeout, annex):
     WebDriverWait(driver, timeout)
     xml_data = driver.page_source
     return xml_data
+
+@lru_cache(maxsize=MAX_CACHE_SIZE)
+def extract_pdf(driver, urn, timeout=30):
+    download_dir = os.path.join(os.getcwd(), "download")
+    if not os.path.exists(download_dir):
+        os.makedirs(download_dir)
+    
+    driver.get(urn)
+    export_button_selector = "#mySidebarRight > div > div:nth-child(2) > div > div > ul > li:nth-child(2) > a"
+    export_pdf_selector = "downloadPdf"
+    
+    # Attesa esplicita per il pulsante di esportazione
+    WebDriverWait(driver, timeout).until(EC.element_to_be_clickable((By.CSS_SELECTOR, export_button_selector))).click()
+    driver.switch_to.window(driver.window_handles[-1])
+    
+    # Attesa esplicita per il pulsante di download PDF
+    WebDriverWait(driver, timeout).until(EC.element_to_be_clickable((By.NAME, export_pdf_selector))).click()
+
+    # Attendere il completamento del download
+    time.sleep(5)  # Attendere un tempo sufficiente per il completamento del download
+    
+    # Verifica se il file PDF è stato scaricato correttamente
+    downloaded_files = os.listdir(download_dir)
+    if not downloaded_files:
+        raise ValueError("Errore nel download del PDF")
+    
+    pdf_file_path = os.path.join(download_dir, downloaded_files[0])
+    return pdf_file_path
 
 @lru_cache(maxsize=MAX_CACHE_SIZE)
 def save_xml(xml_data, save_xml_path):
